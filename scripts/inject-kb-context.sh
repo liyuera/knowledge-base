@@ -41,14 +41,31 @@ $(head -20 "$PREV_FILE")
     done
 fi
 
+# 3. 用户个人画像
+PROFILE_CONTEXT=""
+if [ -n "$VAULT_PATH" ]; then
+    PROFILE_FILE="$VAULT_PATH/$KB_ROOT/个人画像/个人画像.md"
+    if [ -f "$PROFILE_FILE" ]; then
+        PROFILE_CONTEXT="## 用户个人画像
+$(cat "$PROFILE_FILE")
+
+"
+    else
+        PROFILE_CONTEXT="📋 **个人画像未生成**。本次会话中请读取 \`个人画像/\` 下各项目的用户消息记录，分析用户习惯、偏好与性格，生成 \`个人画像/个人画像.md\`。格式参考 SKILL.md 的画像模板。
+
+"
+    fi
+fi
+
 # 合并输出
 FULL_CONTEXT="$INSTRUCTION"
-if [ -n "$KB_CONTEXT" ]; then
+if [ -n "$KB_CONTEXT" ] || [ -n "$PROFILE_CONTEXT" ]; then
     FULL_CONTEXT="$FULL_CONTEXT
 
 ---
-📚 **知识库文件上下文（系统注入，已自动加载，无需手动 Read）**：
+📚 **系统注入上下文（已自动加载，无需手动 Read）**：
 
+$PROFILE_CONTEXT
 $KB_CONTEXT"
 fi
 
