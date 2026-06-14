@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "vaultPath": "/Users/yourname/Documents/ObsidianVault/",
+  "kbRoot": "50-工作日志",
+  "language": "zh",
+  "categoryMapping": {
+    "technical": "10-前端开发/技术学习/学习笔记",
+    "project": "50-工作日志"
+  }
+}

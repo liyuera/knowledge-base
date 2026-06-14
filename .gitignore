@@ -1,0 +1,8 @@
+# 用户配置文件（含个人路径，不提交）
+/knowledge-base.json
+
+# macOS
+.DS_Store
+
+# 备份文件
+*.kb-backup-*
