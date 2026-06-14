@@ -9,12 +9,25 @@ TODAY=$(date +%Y%m%d)
 PROJECT=$(basename "$PWD")
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 
-# 读取用户消息（stdin）
-PROMPT=$(cat)
+# 读取 UserPromptSubmit hook 发送的 JSON（stdin），提取 prompt 文本
+RAW_INPUT=$(cat)
 
+if [ -z "$RAW_INPUT" ]; then
+    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
+    exit 0
+fi
+
+# 解析 JSON，提取 prompt 和 cwd 字段
+PROMPT=$(echo "$RAW_INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('prompt',''))" 2>/dev/null)
 if [ -z "$PROMPT" ]; then
     echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
     exit 0
+fi
+
+# 使用 JSON 中的 cwd 覆盖 shell PWD（更准确反映用户当前项目）
+HOOK_CWD=$(echo "$RAW_INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('cwd',''))" 2>/dev/null)
+if [ -n "$HOOK_CWD" ]; then
+    PROJECT=$(basename "$HOOK_CWD")
 fi
 
 # Vault 未配置时静默跳过收集，但仍输出 KB 日志提醒
@@ -36,10 +49,8 @@ if [ ! -f "$LOG_FILE" ]; then
     echo "" >> "$LOG_FILE"
 fi
 
-echo "## $TIMESTAMP" >> "$LOG_FILE"
-echo "" >> "$LOG_FILE"
-echo "$PROMPT" >> "$LOG_FILE"
-echo "" >> "$LOG_FILE"
+printf '## %s\n\n' "$TIMESTAMP" >> "$LOG_FILE"
+printf '%s\n\n' "$PROMPT" >> "$LOG_FILE"
 
 # 输出 KB 日志提醒
 echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'

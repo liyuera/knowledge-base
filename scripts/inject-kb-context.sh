@@ -41,18 +41,37 @@ $(head -20 "$PREV_FILE")
     done
 fi
 
-# 3. 用户个人画像
+# 3. 用户个人画像（含过期检查）
 PROFILE_CONTEXT=""
 if [ -n "$VAULT_PATH" ]; then
     PROFILE_FILE="$VAULT_PATH/$KB_ROOT/个人画像/个人画像.md"
     if [ -f "$PROFILE_FILE" ]; then
-        PROFILE_CONTEXT="## 用户个人画像
+        # 计算文件年龄（天）
+        if [ "$(uname)" = "Darwin" ]; then
+            FILE_MTIME=$(stat -f %m "$PROFILE_FILE" 2>/dev/null)
+        else
+            FILE_MTIME=$(stat -c %Y "$PROFILE_FILE" 2>/dev/null)
+        fi
+        NOW=$(date +%s)
+        FILE_AGE_DAYS=$(( (NOW - FILE_MTIME) / 86400 ))
+
+        if [ "$FILE_AGE_DAYS" -gt 7 ]; then
+            PROFILE_CONTEXT="### ⚠️ 个人画像已过期（${FILE_AGE_DAYS} 天未更新）
+
+**本次会话应刷新画像**。请读取 \`个人画像/\` 下各项目的新消息记录（关注最近 ${FILE_AGE_DAYS} 天的增量），对照现有画像更新。
+
+---
 $(cat "$PROFILE_FILE")
-
 "
+        else
+            PROFILE_CONTEXT="### 用户个人画像（${FILE_AGE_DAYS} 天前更新）
+$(cat "$PROFILE_FILE")
+"
+        fi
     else
-        PROFILE_CONTEXT="📋 **个人画像未生成**。本次会话中请读取 \`个人画像/\` 下各项目的用户消息记录，分析用户习惯、偏好与性格，生成 \`个人画像/个人画像.md\`。格式参考 SKILL.md 的画像模板。
+        PROFILE_CONTEXT="### 📋 个人画像未生成
 
+本次会话中请读取 \`个人画像/\` 下各项目的用户消息记录，分析用户习惯、偏好与性格，按 SKILL.md 的画像模板生成 \`个人画像/个人画像.md\`。
 "
     fi
 fi
