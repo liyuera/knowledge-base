@@ -13,14 +13,14 @@ BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 RAW_INPUT=$(cat)
 
 if [ -z "$RAW_INPUT" ]; then
-    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
+    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"回答结束前必须执行 KB 自检：1) 本次是否修改了代码？是→判断是否命中跳过规则（仅纯格式/位置/UI文案可跳过，bug fix 不可跳过）；2) 需要写入→立即写入 KB 文件并验证；3) 最后输出 KB 运行日志（📋 KB | <操作> | <详情>），日期用 date +%Y%m%d 获取。日志为回复最后一行。禁止跳过步骤 1 直接输出日志。"}}'
     exit 0
 fi
 
 # 解析 JSON，提取 prompt 和 cwd 字段
 PROMPT=$(echo "$RAW_INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('prompt',''))" 2>/dev/null)
 if [ -z "$PROMPT" ]; then
-    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
+    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"回答结束前必须执行 KB 自检：1) 本次是否修改了代码？是→判断是否命中跳过规则（仅纯格式/位置/UI文案可跳过，bug fix 不可跳过）；2) 需要写入→立即写入 KB 文件并验证；3) 最后输出 KB 运行日志（📋 KB | <操作> | <详情>），日期用 date +%Y%m%d 获取。日志为回复最后一行。禁止跳过步骤 1 直接输出日志。"}}'
     exit 0
 fi
 
@@ -32,7 +32,7 @@ fi
 
 # Vault 未配置时静默跳过收集，但仍输出 KB 日志提醒
 if [ -z "$VAULT_PATH" ]; then
-    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
+    echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"回答结束前必须执行 KB 自检：1) 本次是否修改了代码？是→判断是否命中跳过规则（仅纯格式/位置/UI文案可跳过，bug fix 不可跳过）；2) 需要写入→立即写入 KB 文件并验证；3) 最后输出 KB 运行日志（📋 KB | <操作> | <详情>），日期用 date +%Y%m%d 获取。日志为回复最后一行。禁止跳过步骤 1 直接输出日志。"}}'
     exit 0
 fi
 
@@ -52,5 +52,5 @@ fi
 printf '## %s\n\n' "$TIMESTAMP" >> "$LOG_FILE"
 printf '%s\n\n' "$PROMPT" >> "$LOG_FILE"
 
-# 输出 KB 日志提醒
-echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"本轮回答末尾输出 KB 运行日志（📋 KB | <操作> | <详情>），日期使用 date +%Y%m%d 获取。日志为回复最后一行。"}}'
+# 输出 KB 日志提醒（三段式强制流程）
+echo '{"hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"回答结束前必须执行 KB 自检：1) 本次是否修改了代码？是→判断是否命中跳过规则（仅纯格式/位置/UI文案可跳过，bug fix 不可跳过）；2) 需要写入→立即写入 KB 文件并验证；3) 最后输出 KB 运行日志（📋 KB | <操作> | <详情>），日期用 date +%Y%m%d 获取。日志为回复最后一行。禁止跳过步骤 1 直接输出日志。"}}'

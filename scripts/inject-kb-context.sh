@@ -55,7 +55,7 @@ if [ -n "$VAULT_PATH" ]; then
         NOW=$(date +%s)
         FILE_AGE_DAYS=$(( (NOW - FILE_MTIME) / 86400 ))
 
-        if [ "$FILE_AGE_DAYS" -gt 7 ]; then
+        if [ "$FILE_AGE_DAYS" -gt 2 ]; then
             PROFILE_CONTEXT="### ⚠️ 个人画像已过期（${FILE_AGE_DAYS} 天未更新）
 
 **本次会话应刷新画像**。请读取 \`个人画像/\` 下各项目的新消息记录（关注最近 ${FILE_AGE_DAYS} 天的增量），对照现有画像更新。
